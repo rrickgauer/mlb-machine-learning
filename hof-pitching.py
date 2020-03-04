@@ -49,37 +49,43 @@ def space(numSpaces = 1):
         print('')
 
 
+def getTable(columns, data):
+    table = BeautifulTable(max_width=1000)
+    # table.set_style(BeautifulTable.STYLE_COMPACT)
+    table.column_headers=columns
+    for row in data:
+        table.append_row(row)
+
+    table.column_alignments = BeautifulTable.ALIGN_LEFT
+    return table
+
+
+
 mydb = dbConnect()
 mycursor = mydb.cursor()
-mycursor.execute("select distinct yearID, sum(HR), sum(AB), sum(HR) / sum(AB) as 'rate' from batting where yearID > 1970 group by yearID")
+sql = "select people.playerID, people.nameFirst, people.nameLast, sum(pitching.stint) as stint, sum(pitching.W), sum(pitching.L), sum(pitching.G), sum(pitching.H), sum(pitching.ER), sum(pitching.HR), sum(pitching.BB), sum(pitching.SO) from people, pitching, halloffame where people.playerID=halloffame.playerID and people.playerID=pitching.playerID and halloffame.inducted='y' GROUP by people.playerID"
+mycursor.execute(sql)
 myresult = mycursor.fetchall()
 
 
-table = BeautifulTable()
-table.set_style(BeautifulTable.STYLE_COMPACT)
-table.column_headers = ["Year", "HR", "AB", "rate"]
-
-for x in myresult:
-    table.append_row(x)
-print(table)
-
-
-
-df = pd.DataFrame(myresult, columns=['Year', 'HR', 'AB', 'rate'])
-
-fig, ax1 = plt.subplots()
-
-years = df['Year'].values
-hr = df['rate'].values
+columns = []
+columns.append('PlayerID')
+columns.append('First')
+columns.append('Last')
+columns.append('Stint')
+columns.append('W')
+columns.append('L')
+columns.append('G')
+columns.append('H')
+columns.append('ER')
+columns.append('HR')
+columns.append('BB')
+columns.append('SO')
 
 
-plt.plot(years, hr, marker='o', color='red')
-
-plt.xticks(np.arange(min(years), max(years)+1, 5))
-
-plt.show()
 
 
+print(getTable(columns, myresult))
 
 
 
