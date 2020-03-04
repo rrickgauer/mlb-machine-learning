@@ -51,15 +51,13 @@ def space(numSpaces = 1):
 
 mydb = dbConnect()
 mycursor = mydb.cursor()
-mycursor.execute("SELECT yearID, HR, AB, G, RBI, H from batting where playerID='bondsba01'")
+mycursor.execute("select distinct yearID, sum(HR), sum(AB), sum(HR) / sum(AB) as 'rate' from batting where yearID > 1970 group by yearID")
 myresult = mycursor.fetchall()
-
-
 
 
 table = BeautifulTable()
 table.set_style(BeautifulTable.STYLE_COMPACT)
-table.column_headers = ["Year", "HR", "AB", "G", "RBI", "H"]
+table.column_headers = ["Year", "HR", "AB", "rate"]
 
 for x in myresult:
     table.append_row(x)
@@ -67,41 +65,17 @@ print(table)
 
 
 
-df = pd.DataFrame(myresult, columns=['Year', 'HR', 'AB', 'G', 'RBI', 'H'])
+df = pd.DataFrame(myresult, columns=['Year', 'HR', 'AB', 'rate'])
 
 fig, ax1 = plt.subplots()
 
 years = df['Year'].values
-hr = df['HR'].values
-ab = df['AB'].values
-g = df['G'].values
-rbi = df['RBI'].values
-h = df['H'].values
-
-ax1.plot(years, hr, label='HR', marker='o', color='blue', alpha=0.5)
-
-ax1.set_xticks(np.arange(min(years), max(years)+1, 1))
-ax1.set_xticklabels(np.arange(min(years), max(years)+1, 1), rotation=45)
+hr = df['rate'].values
 
 
-ax2 = ax1.twinx()
-ax2.plot(years, ab, label='AB', marker='o', color='red', alpha=0.5)
-
-ax3 = ax1.twinx()
-ax3.plot(years, g, label='G', marker='o', color='green', alpha=0.5)
-
-ax4 = ax1.twinx()
-ax4.plot(years, rbi, label='RBI', marker='o', color='gold', alpha=0.5)
-
-ax5 = ax1.twinx()
-ax5.plot(years, h, label='H', marker='o', color='purple', alpha=0.5)
+plt.plot(years, hr, marker='o', color='red')
 
 
-plt.yticks([])
-
-
-fig.legend()
-fig.suptitle('Hank Aaron Batting Stats')
 plt.show()
 
 
