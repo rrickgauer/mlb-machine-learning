@@ -7,6 +7,22 @@ from os import path
 import getpass
 from beautifultable import BeautifulTable
 
+def space(numSpaces=1):
+    print('\n' * numSpaces-1)
+
+def getTable(data, columns=[]):
+    table = BeautifulTable(max_width=1000)
+    table.set_style(BeautifulTable.STYLE_COMPACT)
+
+    if len(columns) > 0:
+        table.column_headers=columns
+
+    for row in data:
+        table.append_row(row)
+
+    table.column_alignments = BeautifulTable.ALIGN_LEFT
+    return table
+
 def createNewMysqlFile():
     configFileUserInput = getUserMysqlInfoDict()
 
@@ -42,100 +58,8 @@ def dbConnect():
       database = mysqlData['database']
     )
 
-    return mydb
-
-def space(numSpaces = 1):
-    print("\n" * numSpaces - 1)
-
-
-def getTable(columns, data):
-    table = BeautifulTable(max_width=1000)
-    table.set_style(BeautifulTable.STYLE_COMPACT)
-    table.column_headers=columns
-    for row in data:
-        table.append_row(row)
-
-    table.column_alignments = BeautifulTable.ALIGN_LEFT
-    return table
-
-
-
 mydb = dbConnect()
 mycursor = mydb.cursor()
 sql = "select people.playerID, people.nameFirst, people.nameLast, sum(pitching.stint) as stint, sum(pitching.W), sum(pitching.L), sum(pitching.G), sum(pitching.H), sum(pitching.ER), sum(pitching.HR), sum(pitching.BB), sum(pitching.SO) from people, pitching, halloffame where people.playerID=halloffame.playerID and people.playerID=pitching.playerID and halloffame.inducted='y' GROUP by people.playerID"
 mycursor.execute(sql)
 myresult = mycursor.fetchall()
-
-
-columns = []
-columns.append('PlayerID')
-columns.append('First')
-columns.append('Last')
-columns.append('Stint')
-columns.append('W')
-columns.append('L')
-columns.append('G')
-columns.append('H')
-columns.append('ER')
-columns.append('HR')
-columns.append('BB')
-columns.append('SO')
-
-
-
-
-print(getTable(columns, myresult))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# eof
