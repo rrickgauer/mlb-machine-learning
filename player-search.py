@@ -7,6 +7,8 @@ from os import path
 import getpass
 from beautifultable import BeautifulTable
 
+from utilities import Utilities as util
+
 def space(numSpaces=1):
     print('\n' * numSpaces-1)
 
@@ -58,8 +60,8 @@ def dbConnect():
       database = mysqlData['database']
     )
 
-mydb = dbConnect()
-mycursor = mydb.cursor()
-sql = "select people.playerID, people.nameFirst, people.nameLast, sum(pitching.stint) as stint, sum(pitching.W), sum(pitching.L), sum(pitching.G), sum(pitching.H), sum(pitching.ER), sum(pitching.HR), sum(pitching.BB), sum(pitching.SO) from people, pitching, halloffame where people.playerID=halloffame.playerID and people.playerID=pitching.playerID and halloffame.inducted='y' GROUP by people.playerID"
-mycursor.execute(sql)
-myresult = mycursor.fetchall()
+# mydb = dbConnect()
+# mycursor = mydb.cursor()
+# sql = "select people.playerID, people.nameFirst, people.nameLast, sum(pitching.stint) as stint, sum(pitching.W), sum(pitching.L), sum(pitching.G), sum(pitching.H), sum(pitching.ER), sum(pitching.HR), sum(pitching.BB), sum(pitching.SO) from people, pitching, halloffame where people.playerID=halloffame.playerID and people.playerID=pitching.playerID and halloffame.inducted='y' GROUP by people.playerID"
+# mycursor.execute(sql)
+# myresult = mycursor.fetchall()
