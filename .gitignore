@@ -1,4 +1,4 @@
 .mysql-info.json
 tables/
 .DS_STORE
-_pycache_/
+__pycache__/
