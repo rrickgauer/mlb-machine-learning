@@ -1,29 +1,40 @@
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 import mysql.connector
 import json
 from os import path
-import getpass
-from beautifultable import BeautifulTable
-
 from utilities import Utilities as util
+import argparse
 
-def space(numSpaces=1):
-    print('\n' * numSpaces-1)
+# add command line arguments
+def setArgs():
+    parser = argparse.ArgumentParser(description="Search database for a player ID by first and last name")
+    parser.add_argument('-f', '--first', help="First name")
+    parser.add_argument('-l', '--last', help="Last name")
+    args = parser.parse_args()
+    return args
 
-def getTable(data, columns=[]):
-    table = BeautifulTable(max_width=1000)
-    table.set_style(BeautifulTable.STYLE_COMPACT)
+def getResults(first, last):
+    mysqlData = getMySqlData()
+    mydb = mysql.connector.connect(
+      host     = mysqlData['host'],
+      user     = mysqlData['user'],
+      passwd   = mysqlData['password'],
+      database = mysqlData['database']
+    )
 
-    if len(columns) > 0:
-        table.column_headers=columns
+    sql = "select playerID, nameFirst, nameLast, debut from people where nameFirst like %s and nameLast like %s order by nameLast asc, nameFirst asc limit 50"
+    mycursor = mydb.cursor()
+    mycursor.execute(sql, (first, last))
+    myresult = mycursor.fetchall()
+    return myresult
 
-    for row in data:
-        table.append_row(row)
+def getMySqlData():
+    # create new config file if one does not exist in the local directory
+    if not path.exists('.mysql-info.json'): createNewMysqlFile()
 
-    table.column_alignments = BeautifulTable.ALIGN_LEFT
-    return table
+    with open(".mysql-info.json") as f:
+        mysqlData = json.loads(f.read())
+
+    return mysqlData
 
 def createNewMysqlFile():
     configFileUserInput = getUserMysqlInfoDict()
@@ -45,23 +56,21 @@ def getUserMysqlInfoDict():
 
     return configFileUserInput
 
-def dbConnect():
-    # create new config file if one does not exist in the local directory
-    if not path.exists('.mysql-info.json'):
-        createNewMysqlFile()
+def getNames(args):
+    return (getParameter(args.first), getParameter(args.last))
 
-    with open(".mysql-info.json") as f:
-        mysqlData = json.loads(f.read())
+def getParameter(p):
+    return '%' + p + '%' if p != None else '%%'
 
-    mydb = mysql.connector.connect(
-      host     = mysqlData['host'],
-      user     = mysqlData['user'],
-      passwd   = mysqlData['password'],
-      database = mysqlData['database']
-    )
+########################################  MAIN  #####################################################
+args = setArgs()
 
-# mydb = dbConnect()
-# mycursor = mydb.cursor()
-# sql = "select people.playerID, people.nameFirst, people.nameLast, sum(pitching.stint) as stint, sum(pitching.W), sum(pitching.L), sum(pitching.G), sum(pitching.H), sum(pitching.ER), sum(pitching.HR), sum(pitching.BB), sum(pitching.SO) from people, pitching, halloffame where people.playerID=halloffame.playerID and people.playerID=pitching.playerID and halloffame.inducted='y' GROUP by people.playerID"
-# mycursor.execute(sql)
-# myresult = mycursor.fetchall()
+
+# get the values for first and last
+first, last = getNames(args)
+results = getResults(first, last)
+
+
+util.space()
+table = util.getTable(results, ['PlayerID', 'First', 'Last', 'Debut'])
+print(table)
